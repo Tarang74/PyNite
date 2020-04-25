@@ -41,6 +41,9 @@
         <height>600</height>
        </size>
       </property>
+      <property name="currentIndex">
+       <number>2</number>
+      </property>
       <widget class="QWidget" name="tab1Node">
        <attribute name="title">
         <string>Nodes</string>

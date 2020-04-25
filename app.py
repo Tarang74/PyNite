@@ -14,8 +14,8 @@ from design import Ui_MainWindow
 # One use-case of 'lambda' does not work, so using partial
 from functools import partial
 # For general math functions
-from numpy import (append, array, delete, empty, float, size, squeeze, vstack,
-                   where)
+from numpy import (append, array, delete, empty, float, round, size, squeeze,
+                   vstack, where)
 # For application
 from sys import argv
 # For plotting
@@ -26,6 +26,7 @@ from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg,
                                                 NavigationToolbar2QT as
                                                 NavigationToolbar)
 from matplotlib.figure import Figure
+from mpl_toolkits.mplot3d import Axes3D
 # For special functions as inputs
 func = '''(Abs, acos, acosh, acot, acoth, acsc, acsch, adjoint, airyai,
             airyaiprime, airybi, airybiprime, appellf1, arg, asec, asech, asin,
@@ -159,7 +160,7 @@ class ApplicationWindow(Ui_MainWindow):
 
     def floatEvaluate(self, expr):
         try:
-            expr = float(re(eval(expr)))
+            expr = float(re(eval(expr.lstrip('0'))))
         except NameError:
             print("Coordinate input must contain valid real numbers.")
             return '', True
@@ -248,10 +249,10 @@ class ApplicationWindow(Ui_MainWindow):
 
         exists, check = self.exists(oldname, 'self.appNodes')
 
-        print("Node name:", name)
-        print("x:", x, "m")
-        print("y:", y, "m")
-        print("z:", z, "m")
+        print(f"Node name: {name}")
+        print(f"x: {round(x,6)} m")
+        print(f"y: {round(y,6)} m")
+        print(f"z: {round(z,6)} m")
 
         # If exists, delete and replace; else, create new.
         if (exists == True):
@@ -554,13 +555,13 @@ class ApplicationWindow(Ui_MainWindow):
 
         exists, check = self.exists(oldname, 'self.appMaterials')
 
-        print("Material name:", name)
-        print("E:", E, "Pa")
-        print("G:", G)
-        print("Iy:", Iy)
-        print("Iz:", Iz)
-        print("J:", J)
-        print("A:", A)
+        print(f"Material name:", name)
+        print(f" E: {round(E,9)} Pa")
+        print(f" G: {round(G,9)} Pa")
+        print(f"Iy: {round(Iy,9)} m^4")
+        print(f"Iz: {round(Iz,9)} m^4")
+        print(f" J: {round(J,9)} m^4")
+        print(f" A: {round(A,9)} m^2")
 
         # If exists, delete and replace; else, create new.
         if (exists == True):
@@ -897,10 +898,14 @@ class ApplicationWindow(Ui_MainWindow):
         J = float(self.appMaterials[material, 5])
         A = float(self.appMaterials[material, 6])
 
-        print("Member name:", name)
-        print("I-node:", i)
-        print("J-node:", j)
-        print("Material:", mat)
+        print(f"Member name: {name}")
+        print(
+            f"     I-node: {i} - {[self.appNodes[iNode, 1], self.appNodes[iNode, 2], self.appNodes[iNode, 3]]}"
+        )
+        print(f"     J-node: {j}")
+        print(
+            f"   Material: {mat} - {[self.Materials[material, 1], self.Materials[material, 2], self.appMaterials[material, 3]]}"
+        )
 
         # If exists, delete and replace; else, create new.
         if (exists == True):
@@ -1228,40 +1233,35 @@ class ApplicationWindow(Ui_MainWindow):
         #                          Update member plot                         #
         #---------------------------------------------------------------------#
 
-        ixval = empty((1))
-        iyval = empty((1))
-        izval = empty((1))
+        iX = []
+        iY = []
+        iZ = []
 
-        jxval = empty((1))
-        jyval = empty((1))
-        jzval = empty((1))
-
-        ixval = delete(ixval, 0, 0)
-        iyval = delete(iyval, 0, 0)
-        izval = delete(izval, 0, 0)
-        jxval = delete(jxval, 0, 0)
-        jyval = delete(jyval, 0, 0)
-        jzval = delete(jzval, 0, 0)
+        jX = []
+        jY = []
+        jZ = []
 
         # Figure settings inside Canvas
-        for i in range(len(self.appMembers)):
-            rownum = int(self.appMembers[i, 1])
-            ixval = append(ixval, self.appNodes[rownum, 1]).astype(float)
-            iyval = append(iyval, self.appNodes[rownum, 2]).astype(float)
-            izval = append(izval, self.appNodes[rownum, 3]).astype(float)
+        i = 0
+        while i <= len(self.appMembers) - 1:
+            rownumi = int(self.appMembers[i, 1])
+            iX = append(iX, self.appNodes[rownumi, 1].astype(float))
+            iY = append(iY, self.appNodes[rownumi, 2].astype(float))
+            iZ = append(iZ, self.appNodes[rownumi, 3].astype(float))
 
-            rownum = int(self.appMembers[i, 2])
-            jxval = append(jxval, self.appNodes[rownum, 1]).astype(float)
-            jyval = append(jyval, self.appNodes[rownum, 2]).astype(float)
-            jzval = append(jzval, self.appNodes[rownum, 3]).astype(float)
+            rownumj = int(self.appMembers[i, 2])
+            jX = append(jX, self.appNodes[rownumj, 1].astype(float))
+            jY = append(jY, self.appNodes[rownumj, 2].astype(float))
+            jZ = append(jZ, self.appNodes[rownumj, 3].astype(float))
+
+            i += 1
 
         # Clear figure 'member_ax'
         self.memberCanvas.member_ax.cla()
 
-        # Redefine figure 'member_ax'
-        self.memberCanvas.member_ax.plot3D((ixval, iyval, izval),
-                                           (jxval, jyval, jzval),
-                                           alpha=0.5)
+        for x1, y1, z1, x2, y2, z2 in zip(iX, iY, iZ, jX, jY, jZ):
+            self.memberCanvas.member_ax.plot([x1, x2], [y1, y2], [z1, z2],
+                                             color='g')
 
         # Redraw figure on canvas
         self.memberCanvas.draw()
