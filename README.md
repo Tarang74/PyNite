@@ -1,9 +1,9 @@
 # Credit to user JWock82 for Fork
-A GUI interface for for PyNite using PyQt, incorporating all of its features.
+A GUI interface for PyNite using PyQt.
 
-The app is currently in development and cannot be downloaded as an executable, however feel free to test the app in its current stage. Any new feautures from PyNite will be added as it is updated.
+The app is currently in development and cannot be downloaded as an executable, however feel free to test the app through a terminal (app.py). Any new feautures from PyNite will be added as it gets updated.
 
-Visit master repo for more information.
+Visit the master repo for more information.
 
 # PyNite
 A linear elastic 3D structural engineering finite element library for Python.
