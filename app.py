@@ -27,6 +27,8 @@ from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg,
                                                 NavigationToolbar)
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
+# For SI prefixes
+from si_prefix import si_format
 # For special functions as inputs
 func = '''(Abs, acos, acosh, acot, acoth, acsc, acsch, adjoint, airyai,
             airyaiprime, airybi, airybiprime, appellf1, arg, asec, asech, asin,
@@ -57,7 +59,7 @@ exec("from sympy.functions import " + func)
 
 
 class ApplicationWindow(Ui_MainWindow):
-    def __init__(self, MainWindow, truss, *args, **kwargs):
+    def __init__(self, MainWindow, truss):
 
         # Variable used to communicate with FEModel3D PyNite Program.
         self.truss = truss
@@ -219,6 +221,14 @@ class ApplicationWindow(Ui_MainWindow):
             i += 1
             return r
 
+    def maxLen(self, *argv):
+        longest = 0
+        for arg in argv:
+            cur = len(str(arg))
+            if cur > longest:
+                longest = cur
+        return str(longest)
+
     #-------------------------------------------------------------------------#
     #                                                                         #
     #                             Node Functions                              #
@@ -249,10 +259,11 @@ class ApplicationWindow(Ui_MainWindow):
 
         exists, check = self.exists(oldname, 'self.appNodes')
 
-        print(f"Node name: {name}")
-        print(f"x: {round(x,6)} m")
-        print(f"y: {round(y,6)} m")
-        print(f"z: {round(z,6)} m")
+        lnum = self.maxLen(x, y, z)
+        print(('{:>9}: {}').format("Node name", name))
+        print(('{:>9}: {:>' + lnum + '} {}m').format("x", si_format(x, precision="3", format_str=u"{value}"), si_format(x, precision="3", format_str=u"{prefix}")))
+        print(('{:>9}: {:>' + lnum + '} {}m').format("y", si_format(y, precision="3", format_str=u"{value}"), si_format(y, precision="3", format_str=u"{prefix}")))
+        print(('{:>9}: {:>' + lnum + '} {}m').format("z", si_format(z, precision="3", format_str=u"{value}"), si_format(z, precision="3", format_str=u"{prefix}"))) 
 
         # If exists, delete and replace; else, create new.
         if (exists == True):
@@ -274,6 +285,7 @@ class ApplicationWindow(Ui_MainWindow):
             dup = self.duplicate(self.appNodes, find)
             if dup == True:
                 print("Nodes must be unique.")
+                print("-"*80)
                 return
 
             self.truss.AddNode(name, x, y, z)
@@ -311,6 +323,7 @@ class ApplicationWindow(Ui_MainWindow):
         self.truss.RemoveNode(name)
         self.appNodes = delete(self.appNodes, check, 0)
         print(f"Deleted Node: {name}")
+        print("-"*80)
 
         # Delete all rows and re-create table
         self.tableClear(self.design.table2updateNode)
@@ -555,13 +568,14 @@ class ApplicationWindow(Ui_MainWindow):
 
         exists, check = self.exists(oldname, 'self.appMaterials')
 
-        print(f"Material name:", name)
-        print(f" E: {round(E,9)} Pa")
-        print(f" G: {round(G,9)} Pa")
-        print(f"Iy: {round(Iy,9)} m^4")
-        print(f"Iz: {round(Iz,9)} m^4")
-        print(f" J: {round(J,9)} m^4")
-        print(f" A: {round(A,9)} m^2")
+        lnum = self.maxLen(E, G, Iy, Iz, J, A)
+        print(('{:>13}: {}').format("Node name", name))
+        print(('{:>13}: {:>' + lnum + '} {}Pa').format("E", si_format(E, precision="3", format_str=u"{value}"), si_format(E, precision="3", format_str=u"{prefix}")))
+        print(('{:>13}: {:>' + lnum + '} {}Pa').format("G", si_format(G, precision="3", format_str=u"{value}"), si_format(G, precision="3", format_str=u"{prefix}")))
+        print(('{:>13}: {:>' + lnum + '} {}m^4').format("Iy", si_format(Iy * 1000**4, precision="3", format_str=u"{value}"), si_format(Iy, precision="3", format_str=u"{prefix}")))
+        print(('{:>13}: {:>' + lnum + '} {}m^4').format("Iz", si_format(Iz * 1000**4, precision="3", format_str=u"{value}"), si_format(Iz, precision="3", format_str=u"{prefix}")))
+        print(('{:>13}: {:>' + lnum + '} {}m^4').format("J", si_format(J * 1000**4, precision="3", format_str=u"{value}"), si_format(J, precision="3", format_str=u"{prefix}")))
+        print(('{:>13}: {:>' + lnum + '} {}m^2').format("A", si_format(A * 1000**, precision="3", format_str=u"{value}"), si_format(A, precision="3", format_str=u"{prefix}")))
 
         # If exists, delete and replace; else, create new.
         if (exists == True):
@@ -887,9 +901,18 @@ class ApplicationWindow(Ui_MainWindow):
 
         exists, check = self.exists(oldname, 'self.appMembers')
 
+        # Names
         i = self.appNodes[iNode, 0]
         j = self.appNodes[jNode, 0]
         mat = self.appMaterials[material, 0]
+
+        # Values
+        ix = float(self.appNodes[iNode, 1])
+        iy = float(self.appNodes[iNode, 2])
+        iz = float(self.appNodes[iNode, 3])
+        jx = float(self.appNodes[jNode, 1])
+        jy = float(self.appNodes[jNode, 2])
+        jz = float(self.appNodes[jNode, 3])
 
         E = float(self.appMaterials[material, 1])
         G = float(self.appMaterials[material, 2])
@@ -900,11 +923,11 @@ class ApplicationWindow(Ui_MainWindow):
 
         print(f"Member name: {name}")
         print(
-            f"     I-node: {i} - {[self.appNodes[iNode, 1], self.appNodes[iNode, 2], self.appNodes[iNode, 3]]}"
+            f"  I-node: {i} - ({float(self.appNodes[iNode, 1]), float(self.appNodes[iNode, 2]), float(self.appNodes[iNode, 3])}) m"
         )
-        print(f"     J-node: {j}")
+        print(f"  J-node: {j}")
         print(
-            f"   Material: {mat} - {[self.Materials[material, 1], self.Materials[material, 2], self.appMaterials[material, 3]]}"
+            f"Material: {mat} - {[self.appMaterials[material, 1], self.appMaterials[material, 2], self.appMaterials[material, 3]]}"
         )
 
         # If exists, delete and replace; else, create new.

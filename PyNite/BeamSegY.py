@@ -12,7 +12,7 @@ class BeamSegY(BeamSegZ):
         Parameters
         ----------
         x : number
-            Location (relative to start of segment) where moment is to be calculated
+            Location (relative to start of segment) where moment is to be calculated.
         '''
 
         V1 = self.V1
@@ -27,23 +27,23 @@ class BeamSegY(BeamSegZ):
 #%%
     def Slope(self, x):
         """
-        Returns the slope at a point on the segment
+        Returns the slope at a point on the segment.
         
         Parameters
         ----------
         x : number
-          Location (relative to start of segment) where slope is to be calculated
+          The location (relative to start of segment) where slope is to be calculated.
         EI : number
-          Flexural stiffness of the segment
+          The flexural stiffness of the segment.
         
         Returns
         -------
         Slope : number
-          The slope of the segment (radians) at location "x"
+          The slope of the segment (radians) at location "x".
         
         Notes
         -----
-        Any unit system may be used as long as the units are consistent with each other
+        Any unit system may be used as long as the units are consistent with each other.
         
         """  
         

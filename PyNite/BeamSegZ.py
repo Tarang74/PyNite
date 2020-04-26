@@ -99,7 +99,7 @@ class BeamSegZ():
         w2 = self.w2
         L = self.Length()
         
-        return V1 + w1*x + x**2*(-w1 + w2)/(2*L)
+        return V1 + w1*x + x**2*(w2 - w1)/(2*L)
 
 #%% 
     # Returns the moment at a location on the segment
@@ -111,7 +111,7 @@ class BeamSegZ():
         w2 = self.w2
         L = self.Length()
         
-        return M1 - V1*x - w1*x**2/2 - x**3*(-w1 + w2)/(6*L)
+        return M1 - V1*x - w1*x**2/2 - x**3*(w2 - w1)/(6*L)
 
 #%%
     # Returns the axial force at a location on the segment
@@ -181,7 +181,7 @@ class BeamSegZ():
         L = self.Length()
         EI = self.EI
         
-        return delta1 + theta1*x - M1*x**2/(2*EI) + V1*x**3/(6*EI) + w1*x**4/(24*EI) + x**5*(-w1 + w2)/(120*EI*L)
+        return delta1 + theta1*x - M1*x**2/(2*EI) + V1*x**3/(6*EI) + w1*x**4/(24*EI) + x**5*(w2 - w1)/(120*EI*L)
 
 #%%
     def AxialDeflection(self, x):
@@ -261,9 +261,9 @@ class BeamSegZ():
         L = self.Length()
         
         # Find the quadratic equation parameters
-        a = -(w2-w1)/(2*L)
-        b = -w1
-        c = -V1
+        a = (w1-w2)/(2*L)
+        b = (-1)*w1
+        c = (-1)*V1
     
         # Determine possible locations of maximum moment
         if a == 0:
@@ -307,9 +307,9 @@ class BeamSegZ():
         L = self.Length()
         
         # Find the quadratic equation parameters
-        a = -(w2-w1)/(2*L)
-        b = -w1
-        c = -V1
+        a = (w1-w2)/(2*L)
+        b = (-1)*w1
+        c = (-1)*V1
     
         # Determine possible locations of minimum moment
         if a == 0:

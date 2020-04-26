@@ -1,4 +1,4 @@
-# Import the Visualization Toolkit if it's not alread imported
+# Import the Visualization Toolkit if it's not already imported
 # You must be running a 64 bit version of Python for this to work
 import vtk
 from numpy import array, empty, append

@@ -5,6 +5,7 @@ build/*
 dist/*
 Derivations/*.ipynb_checkpoints
 ./debug.py
+./app.spec
 
 __pycache__/
 *.py[cod]

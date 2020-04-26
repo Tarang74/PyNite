@@ -1,45 +1,107 @@
 from numpy import where, append, array, empty, float, delete, squeeze, size
-func = '''(Abs, acos, acosh, acot, acoth, acsc, acsch, adjoint, airyai,
-            airyaiprime, airybi, airybiprime, appellf1, arg, asec, asech, asin,
-            asinh, assoc_laguerre, assoc_legendre, atan, atan2, atanh, bell,
-            bernoulli, besseli, besselj, besselk, bessely, beta, binomial,
-            bspline_basis, bspline_basis_set, carmichael, catalan, cbrt,
-            ceiling, chebyshevt, chebyshevt_root, chebyshevu, chebyshevu_root,
-            Chi, Ci, combinatorial, conjugate, cos, cosh, cot, coth, csc, csch,
-            digamma, DiracDelta, dirichlet_eta, E1, Ei, Eijk, elementary,
-            elliptic_e, elliptic_f, elliptic_k, elliptic_pi, erf, erf2,
-            erf2inv, erfc, erfcinv, erfi, erfinv, euler, exp, exp_polar,
-            expint, factorial, factorial2, FallingFactorial, ff, fibonacci,
-            floor, frac, fresnelc, fresnels, gamma, gegenbauer, genocchi,
-            hankel1, hankel2, harmonic, Heaviside, hermite, hn1, hn2, hyper,
-            Id, im, interpolating_spline, jacobi, jacobi_normalized, jn,
-            jn_zeros, KroneckerDelta, laguerre, LambertW, legendre, lerchphi,
-            LeviCivita, Li, li, ln, log, loggamma, lowergamma, lucas, marcumq,
-            mathieuc, mathieucprime, mathieus, mathieusprime, Max, meijerg,
-            Min, multigamma, partition, periodic_argument, Piecewise,
-            piecewise_fold, polar_lift, polarify, polygamma, polylog,
-            principal_branch, re, real_root, rf, RisingFactorial, root, sec,
-            sech, Shi, Si, sign, sin, sinc, SingularityFunction, sinh, special,
-            sqrt, stieltjes, subfactorial, tan, tanh, transpose, tribonacci,
-            trigamma, unbranched_argument, unpolarify, uppergamma, yn, Ynm,
-            Ynm_c, zeta, Znm)'''
-from sympy import E, pi, I
-exec("from sympy.functions import " + func)
 
+from SIprefix import si_format
 
 class Debug():
     def debug(self):
-        self.appNodes = array([['name', '1', '1', '1'],
-                               ['name2', '2', '1', '1'],
+        self.appNodes = array([['name', '0.001', '0', '0'],
+                               ['name2', '0.06', '0.002', '0'],
                                ['name3', '3', '1', '1']])
         self.appMembers = array([['a', '0', '1', '0'], ['ab', '0', '2', '0']])
-        self.appMaterials = array([['mat1', '1', '1']])
+        self.appMaterials = array([[
+            'mat1', '424325.995', '191886.999', '0.001',
+            '0.00000000000675', '5', '0.0000009', ''
+        ]])
+
+    def maxLen(self, *argv):
+        longest = 0
+        for arg in argv:
+            cur = len(str(arg))
+            if cur > longest:
+                longest = cur
+        return str(longest)
 
     def debug1(self):
-        expr = '-001.100002500*9'
-        expr = float(re(eval(expr)))
-        print(expr)
+        name = "Member"
+        iNode = 0
+        jNode = 1
+        material = 0
+
+        # Names
+        i = self.appNodes[iNode, 0]
+        j = self.appNodes[jNode, 0]
+        mat = self.appMaterials[material, 0]
+
+        ix = float(self.appNodes[iNode, 1])
+        iy = float(self.appNodes[iNode, 2])
+        iz = float(self.appNodes[iNode, 3])
+        jx = float(self.appNodes[jNode, 1])
+        jy = float(self.appNodes[jNode, 2])
+        jz = float(self.appNodes[jNode, 3])
+
+        E = float(self.appMaterials[material, 1])
+        G = float(self.appMaterials[material, 2])
+        Iy = float(self.appMaterials[material, 3])
+        Iz = float(self.appMaterials[material, 4])
+        J = float(self.appMaterials[material, 5])
+        A = float(self.appMaterials[material, 6])
+
+        lname = self.maxLen(name, i, j, mat)
+        lnum = self.maxLen(ix, iy, iz, jx, jy, jz)
+
+
+
+        # print(('{:>11}: {:<' + lname + '}').format("Member name", name))
+
+        # print(('{:>11}: {:<' + lname + '} - [{:>' + lnum + '} {}m {:>' + lnum + '} {}m {:>' + lnum + '} {}m]').format(
+        #     "I-node",
+        #     i,
+        #     si_format(ix, precision=3, format_str=u'{value}'),
+        #     si_format(ix, precision=3, format_str=u'{prefix}'),
+        #     si_format(iy, precision=3, format_str=u'{value}'),
+        #     si_format(iy, precision=3, format_str=u'{prefix}'),
+        #     si_format(iz, precision=3, format_str=u'{value}'),
+        #     si_format(iz, precision=3, format_str=u'{prefix}')))
+
+        
+
+        # print(('{:>11}: {:<' + lname + '} - [{:>' + lnum + '}m {:>' + lnum +
+        #        '}m {:>' + lnum + '}m]').format("J-node", j, round(jx, 9),
+        #                                          round(jy, 9), round(jz, 9)))
+        # lnum = self.maxLen(E, G, Iy, Iz, J, A)
+        # print(('{:>11}: {:<' + lname + '} - (E={:<' + lnum + '}Pa  G={:>' +
+        #        lnum + '}Pa  Iy={:>' + lnum + '}m^4 Iz={:>' + lnum +
+        #        '}m^4 J={:>' + lnum + '}m^4 A={:>' + lnum + '}m^2)').format(
+        #            "Material", mat, round(E, 9), round(G, 9), round(Iy, 9),
+        #            round(Iz, 9), round(J, 9), round(A, 9)))
+    	
+        x = 0.001 
+        y = 0.001
+        z = 0.001
+
+        Iy = 0.001
+        Iz = 0.00000001
+        J = 0.001
+        A = 0.001
+        prec = 6
+
+        lnum = self.maxLen(x, y, z)
+        print(('{:>9}: {}').format("Node name", name))
+        print(('{:>9}: {:>' + lnum + '} {}m').format("x", si_format(x, precision=3, format_str=u"{value}"), si_format(x, format_str=u"{prefix}")))
+        print(('{:>9}: {:>' + lnum + '} {}m').format("y", si_format(y, precision=3, format_str=u"{value}"), si_format(y, format_str=u"{prefix}")))
+        print(('{:>9}: {:>' + lnum + '} {}m').format("z", si_format(z, precision=3, format_str=u"{value}"), si_format(z, format_str=u"{prefix}"))) 
+
+        lnum = self.maxLen(E, G, Iy, Iz, J, A)
+        print(('{:>13}: {}').format("Node name", name))
+        print(('{:>13}: {:>' + lnum + '} {}Pa').format("E", si_format(E, precision=3, format_str=u"{value}"), si_format(E, format_str=u"{prefix}")))
+        print(('{:>13}: {:>' + lnum + '} {}Pa').format("G", si_format(G, precision=3, format_str=u"{value}"), si_format(G, format_str=u"{prefix}")))
+        print(('{:>13}: {:>' + lnum + '} {}m^4').format("Iy", si_format(Iy, precision=3, format_str=u"{value}", p=4), si_format(Iy, format_str=u"{prefix}", p=4)))
+        print(('{:>13}: {:>' + lnum + '} {}m^4').format("Iz", si_format(Iz, precision=3, format_str=u"{value}", p=4), si_format(Iz, format_str=u"{prefix}", p=4)))
+        print(('{:>13}: {:>' + lnum + '} {}m^4').format("J", si_format(J, precision=3, format_str=u"{value}", p=4), si_format(J, format_str=u"{prefix}", p=4)))
+        print(('{:>13}: {:>' + lnum + '} {}m^2').format("A", si_format(A, precision=3, format_str=u"{value}", p=2), si_format(A, format_str=u"{prefix}", p=2)))
 
 
 ui = Debug()
+ui.debug()
 ui.debug1()
+

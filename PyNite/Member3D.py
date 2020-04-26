@@ -42,7 +42,7 @@ class Member3D():
         self.Releases = [False, False, False, False, False, False, False, False, False, False, False, False]
         self.LoadCombos = LoadCombos # The dictionary of load combinations in the model this member belongs to
         
-        # The 'Member3D' object will store results for one load combination at a time. To reduce repetative calculations
+        # The 'Member3D' object will store results for one load combination at a time. To reduce repetitive calculations
         # the '__solved_combo' variable will be used to track whether the member needs to be resegmented before running
         # calculations for any given load combination.
         self.__solved_combo = None # The current solved load combination
@@ -190,7 +190,7 @@ class Member3D():
                 
             i += 1
 
-        # Return the local geomtric stiffness matrix, with end releases applied
+        # Return the local geometric stiffness matrix, with end releases applied
         return kg_Condensed
     
 #%%
