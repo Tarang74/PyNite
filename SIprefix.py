@@ -12,7 +12,7 @@ def si_format(value, precision=0, format_str=u'{value} {prefix}',
               exp_format_str=u'{value}e{ex10}', p=1):
     if p < 1:
         raise ValueError("Exponent out range for unit.")
-        return
+
     sValue, ex10 = split(value, precision, p=p)
     value_format = u'%%.%df' % precision
     value_str = value_format % sValue
@@ -26,10 +26,10 @@ def si_format(value, precision=0, format_str=u'{value} {prefix}',
         return exp_format_str.format(value=value_str,
                                      ex10=''.join([sign, str(ex10)]))
 
-
 def split(value, precision=1, p=1):
     negative = False
     g = 3*p
+    ex = 0
 
     if value < 0.:
         value = -value
@@ -37,27 +37,25 @@ def split(value, precision=1, p=1):
     elif value == 0.:
         return 0., 0
 
-    ex10 = float(log(value, 10))
+    if negative == False: 
+        ex10 = floor(float(log(value, 10)))
+    else: 
+        ex10 = ceiling(float(log(value, 10)))
     
     if ex10 > 0:
         mod = floor(ex10 / g)
         if floor(ex10 / g) > 1:
             mod = ceiling(ex10 / g)
         value /= (10 ** (g*mod))
-    elif ex10 < 0:
-        mod = floor(-ex10 / g)
-        if floor(-ex10 / g) > 1:
-            mod = ceiling(-ex10 / g)
-        value *= (10 ** (g*mod))
 
-    if ex10 > 0:
         ex = floor(ex10 / g) * 3
         if floor(ex10 / g) > 1:
             ex = ceiling(ex10 / g) * 3
     elif ex10 < 0:
-        ex = floor(-ex10 / g) * -3
-        if floor(-ex10 / g) > 1:
-            ex = ceiling(-ex10 / g) * -3
+        mod = ceiling(-ex10 / g)
+        value *= (10 ** (g*mod))
+        
+        ex = ceiling(-ex10 / g) * -3
 
     if negative:
         value *= -1

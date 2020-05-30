@@ -28,7 +28,7 @@ from matplotlib.backends.backend_qt5agg import (FigureCanvasQTAgg,
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 # For SI prefixes
-from si_prefix import si_format
+from SIprefix import si_format
 # For special functions as inputs
 func = '''(Abs, acos, acosh, acot, acoth, acsc, acsch, adjoint, airyai,
             airyaiprime, airybi, airybiprime, appellf1, arg, asec, asech, asin,
@@ -248,7 +248,8 @@ class ApplicationWindow(Ui_MainWindow):
             if (errors == True):
                 return
         else:
-            print("Please enter a value.")
+            print("Error: Please fill all fields.")
+            print("-" * 80)
             return
 
         # The following is for when user edits the displayed text
@@ -258,16 +259,18 @@ class ApplicationWindow(Ui_MainWindow):
             oldname.strip()
 
         exists, check = self.exists(oldname, 'self.appNodes')
-
-        lnum = self.maxLen(x, y, z)
-        print(('{:>9}: {}').format("Node name", name))
-        print(('{:>9}: {:>' + lnum + '} {}m').format("x", si_format(x, precision="3", format_str=u"{value}"), si_format(x, precision="3", format_str=u"{prefix}")))
-        print(('{:>9}: {:>' + lnum + '} {}m').format("y", si_format(y, precision="3", format_str=u"{value}"), si_format(y, precision="3", format_str=u"{prefix}")))
-        print(('{:>9}: {:>' + lnum + '} {}m').format("z", si_format(z, precision="3", format_str=u"{value}"), si_format(z, precision="3", format_str=u"{prefix}"))) 
+        # Check if values are used by another element of same type
+        
+        find = array([str(x), str(y), str(z)])
+        dup = self.duplicate(self.appNodes, find)
+        if dup == True:
+            print("Error: Node coordinates must be unique.")
+            print("-"*80)
+            return
 
         # If exists, delete and replace; else, create new.
         if (exists == True):
-            print("Node already exists.")
+            print(f"Warning: Node {name} already exists - coordinates will be overwritten.")
             self.truss.RemoveNode(oldname)
             self.truss.AddNode(name, x, y, z)
 
@@ -280,18 +283,16 @@ class ApplicationWindow(Ui_MainWindow):
             self.memberUpdateOptions(check)
 
         if (exists == False):
-            # Check if values are used by another element of same type
-            find = array([str(x), str(y), str(z)])
-            dup = self.duplicate(self.appNodes, find)
-            if dup == True:
-                print("Nodes must be unique.")
-                print("-"*80)
-                return
-
             self.truss.AddNode(name, x, y, z)
             self.appNodes = vstack(
                 (self.appNodes, array([name, str(x),
                                        str(y), str(z)])))
+
+        lnum = self.maxLen(si_format(x, precision=3, format_str=u"{value}"), si_format(y, precision=3, format_str=u"{value}"), si_format(z, precision=3, format_str=u"{value}"))
+        print(('{:>9}: {}').format("Node name", name))
+        print(('{:>9}: {:>' + lnum + '} {}m').format("x", si_format(x, precision=3, format_str=u"{value}"), si_format(x, precision=3, format_str=u"{prefix}")))
+        print(('{:>9}: {:>' + lnum + '} {}m').format("y", si_format(y, precision=3, format_str=u"{value}"), si_format(y, precision=3, format_str=u"{prefix}")))
+        print(('{:>9}: {:>' + lnum + '} {}m').format("z", si_format(z, precision=3, format_str=u"{value}"), si_format(z, precision=3, format_str=u"{prefix}"))) 
 
         print("-" * 80)
 
@@ -557,7 +558,8 @@ class ApplicationWindow(Ui_MainWindow):
             if (errors == True):
                 return
         else:
-            print("Please enter a value.")
+            print("Error: Please fill all fields.")
+            print("-" * 80)
             return
 
         # The following is for when user edits the displayed text
@@ -568,18 +570,24 @@ class ApplicationWindow(Ui_MainWindow):
 
         exists, check = self.exists(oldname, 'self.appMaterials')
 
-        lnum = self.maxLen(E, G, Iy, Iz, J, A)
-        print(('{:>13}: {}').format("Node name", name))
-        print(('{:>13}: {:>' + lnum + '} {}Pa').format("E", si_format(E, precision="3", format_str=u"{value}"), si_format(E, precision="3", format_str=u"{prefix}")))
-        print(('{:>13}: {:>' + lnum + '} {}Pa').format("G", si_format(G, precision="3", format_str=u"{value}"), si_format(G, precision="3", format_str=u"{prefix}")))
-        print(('{:>13}: {:>' + lnum + '} {}m^4').format("Iy", si_format(Iy * 1000**4, precision="3", format_str=u"{value}"), si_format(Iy, precision="3", format_str=u"{prefix}")))
-        print(('{:>13}: {:>' + lnum + '} {}m^4').format("Iz", si_format(Iz * 1000**4, precision="3", format_str=u"{value}"), si_format(Iz, precision="3", format_str=u"{prefix}")))
-        print(('{:>13}: {:>' + lnum + '} {}m^4').format("J", si_format(J * 1000**4, precision="3", format_str=u"{value}"), si_format(J, precision="3", format_str=u"{prefix}")))
-        print(('{:>13}: {:>' + lnum + '} {}m^2').format("A", si_format(A * 1000**, precision="3", format_str=u"{value}"), si_format(A, precision="3", format_str=u"{prefix}")))
+        # Check if values are used by another element of same type
+        find = array(
+            [str(E),
+                str(G),
+                str(J),
+                str(Iy),
+                str(Iz),
+                str(J),
+                str(A)])
+        dup = self.duplicate(self.appMaterials, find)
+        if dup == True:
+            print("Error: Material values must be unique.")
+            print("-" * 80)
+            return
 
         # If exists, delete and replace; else, create new.
         if (exists == True):
-            print("Material already exists.")
+            print(f"Warning: Material {name} already exists - values will be overwritten.")
             self.appMaterials[check, 0] = name
             self.appMaterials[check, 1] = str(E)
             self.appMaterials[check, 2] = str(G)
@@ -597,20 +605,6 @@ class ApplicationWindow(Ui_MainWindow):
             # Add members that were deleted
             self.memberUpdateOptions(check)
         if (exists == False):
-            # Check if values are used by another element of same type
-            find = array(
-                [str(E),
-                 str(G),
-                 str(J),
-                 str(Iy),
-                 str(Iz),
-                 str(J),
-                 str(A)])
-            dup = self.duplicate(self.appMaterials, find)
-            if dup == True:
-                print("Materials must be unique.")
-                return
-
             self.appMaterials = vstack(
                 (self.appMaterials,
                  array(
@@ -621,6 +615,15 @@ class ApplicationWindow(Ui_MainWindow):
                       str(Iz),
                       str(J),
                       str(A)])))
+
+        lnum = self.maxLen(si_format(E, precision=3, format_str=u"{value}"), si_format(G, precision=3, format_str=u"{value}"), si_format(Iy, precision=3, format_str=u"{value}", p=4), si_format(Iz, precision=3, format_str=u"{value}", p=4), si_format(J, precision=3, format_str=u"{value}", p=4), si_format(A, precision=3, format_str=u"{value}", p=2))
+        print(('{:>13}: {}').format("Material name", name))
+        print(('{:>13}: {:>' + lnum + '} {}Pa').format("E", si_format(E, precision=3, format_str=u"{value}"), si_format(E, precision=3, format_str=u"{prefix}")))
+        print(('{:>13}: {:>' + lnum + '} {}Pa').format("G", si_format(G, precision=3, format_str=u"{value}"), si_format(G, precision=3, format_str=u"{prefix}")))
+        print(('{:>13}: {:>' + lnum + '} {}m^4').format("Iy", si_format(Iy, precision=3, format_str=u"{value}", p=4), si_format(Iy, precision=3, format_str=u"{prefix}", p=4)))
+        print(('{:>13}: {:>' + lnum + '} {}m^4').format("Iz", si_format(Iz, precision=3, format_str=u"{value}", p=4), si_format(Iz, precision=3, format_str=u"{prefix}", p=4)))
+        print(('{:>13}: {:>' + lnum + '} {}m^4').format("J", si_format(J, precision=3, format_str=u"{value}", p=4), si_format(J, precision=3, format_str=u"{prefix}", p=4)))
+        print(('{:>13}: {:>' + lnum + '} {}m^2').format("A", si_format(A, precision=3, format_str=u"{value}", p=2), si_format(A, precision=3, format_str=u"{prefix}", p=2)))
 
         print("-" * 80)
 
@@ -654,6 +657,7 @@ class ApplicationWindow(Ui_MainWindow):
         exists, check = self.exists(name, 'self.appMaterials')
         self.appMaterials = delete(self.appMaterials, check, 0)
         print(f"Deleted Material: {name}")
+        print("-" * 80)
 
         # Delete all rows and re-create table
         self.tableClear(self.design.table2updateMaterial)
@@ -887,10 +891,12 @@ class ApplicationWindow(Ui_MainWindow):
     def memberSubmit(self, name, iNode, jNode, material, oldname=""):
         # Check if input is valid
         if name == "" or iNode == -1 or jNode == -1 or material == -1:
-            print("Please enter a value.")
+            print("Error: Please fill all fields.")
+            print("-" * 80)
             return
         if iNode == jNode:
-            print("Member end-nodes cannot be the same.")
+            print("Error: Member end-nodes cannot be the same.")
+            print("-" * 80)
             return
 
         # The following is for when user edits the displayed text (mistakes)
@@ -921,18 +927,18 @@ class ApplicationWindow(Ui_MainWindow):
         J = float(self.appMaterials[material, 5])
         A = float(self.appMaterials[material, 6])
 
-        print(f"Member name: {name}")
-        print(
-            f"  I-node: {i} - ({float(self.appNodes[iNode, 1]), float(self.appNodes[iNode, 2]), float(self.appNodes[iNode, 3])}) m"
-        )
-        print(f"  J-node: {j}")
-        print(
-            f"Material: {mat} - {[self.appMaterials[material, 1], self.appMaterials[material, 2], self.appMaterials[material, 3]]}"
-        )
+        
+        # Check if values are used by another element of same type
+        find = array([str(iNode), str(jNode), str(material)])
+        dup = self.duplicate(self.appMembers, find)
+        if dup == True:
+            print("Error: Member properties must be unique.")
+            print("-" * 80)
+            return
 
         # If exists, delete and replace; else, create new.
         if (exists == True):
-            print("Member already exists.")
+            print("Warning: Member already exists - Properties will be overwritten.")
             self.truss.RemoveMember(oldname)
             self.truss.AddMember(name, i, j, E, G, Iy, Iz, J, A)
             self.appMembers[check, 0] = name
@@ -940,17 +946,18 @@ class ApplicationWindow(Ui_MainWindow):
             self.appMembers[check, 2] = jNode
             self.appMembers[check, 3] = material
         if (exists == False):
-            # Check if values are used by another element of same type
-            find = array([str(iNode), str(jNode), str(material)])
-            dup = self.duplicate(self.appMembers, find)
-            if dup == True:
-                print("Members must be unique.")
-                return
-
             self.truss.AddMember(name, i, j, E, G, Iy, Iz, J, A)
             self.appMembers = vstack(
                 (self.appMembers, array([name, iNode, jNode, material])))
 
+        print(f"Member name: {name}")
+        print(
+              f"     I-node: {i}"
+        )
+        print(f"     J-node: {j}")
+        print(
+              f"   Material: {mat}"
+        )
         print("-" * 80)
 
         self.tableClear(self.design.table2updateMember)
@@ -1040,7 +1047,7 @@ class ApplicationWindow(Ui_MainWindow):
         self.truss.RemoveMember(name)
         self.appMembers = delete(self.appMembers, check, 0)
         print(f"Deleted Member: {name}")
-
+        print("-" * 80)
         # Delete all rows and re-create table
         self.tableClear(self.design.table2updateMember)
         self.memberDisplay()
@@ -1288,6 +1295,14 @@ class ApplicationWindow(Ui_MainWindow):
 
         # Redraw figure on canvas
         self.memberCanvas.draw()
+
+    def plateSubmit(self):
+        return
+    
+    def plateUpdate(self):
+        return
+
+    def 
 
 
 #-----------------------------------------------------------------------------#
